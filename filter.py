@@ -23,7 +23,7 @@ class OneEuroFilter:
         
         # Previous values.
         self.x_prev = x0
-        self.dx_prev = torch.ones((x0.shape[0], 147)).to(x0.device) * dx0
+        self.dx_prev = torch.ones((x0.shape[0], x0.shape[1])).to(x0.device) * dx0
         self.t_prev = t0
 
     def __call__(self, t, x):
@@ -50,8 +50,9 @@ class OneEuroFilter:
 
 def filter_signal(pose):
     oefilter = OneEuroFilter(0, pose[:, 0], min_cutoff=0.05)
-    new_pose = [pose[:, 0]]
-    for i in range(1, pose.shape[:, 0]):
-        new_pose.append(oefilter(i, pose[:, i])[:, None])
+    new_pose = [pose[:, 0][:, None]]
+    for i in range(1, pose.shape[1]):
+        tmp_pose = oefilter(i, pose[:, i])[:, None]
+        new_pose.append(tmp_pose)
 
     return torch.cat(new_pose, 1)
